@@ -1,0 +1,21 @@
+sudo: required
+services:
+  - docker
+before_install:
+  - docker build -t avesther/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run avesther/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t avesther/multi-client ./client
+  - docker build -t avesther/multi-nginx ./nginx
+  - docker build -t avesther/multi-server ./server
+  - docker build -t avesther/multi-worker ./worker
+# login to docker cli
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+# push to docker hub
+  - docker push avesther/multi-client
+  - docker push avesther/multi-nginx
+  - docker push avesther/multi-server
+  - docker push avesther/multi-worker
